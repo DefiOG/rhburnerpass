@@ -1,0 +1,56 @@
+RHBurnerPass v0.2 - Official Integration Hardening
+==================================================
+
+This update keeps the existing Robinhood Chain Testnet Registry, FeeVault, DemoMint,
+and their existing on-chain state.
+
+1. Extract the patch over the root of your existing Codex-built rhburnerpass project.
+
+2. Verify locally (does NOT deploy anything):
+
+   VERIFY_HARDENING.cmd
+
+   Or manually:
+
+   npm install
+   npm run contracts:compile
+   npm test
+   npm run build
+
+3. After all checks pass, harden the EXISTING testnet deployment:
+
+   npm run harden:testnet
+
+   This transaction script will:
+   - read the existing Registry, FeeVault, and DemoMint from public/config.json;
+   - deploy RHBurnerPassOfficialIntegrationRegistry only;
+   - permanently bind it to the existing Registry and FeeVault;
+   - approve the current DemoMint at its exact runtime code hash when the deployer is owner;
+   - update public/config.json with officialIntegrationRegistry;
+   - NOT redeploy or modify the existing Registry/FeeVault/DemoMint.
+
+PROTOCOL OWNER
+--------------
+For alpha/testnet, if PROTOCOL_OWNER_ADDRESS is not set, the deployment wallet becomes
+owner of the official integration list.
+
+For mainnet, set PROTOCOL_OWNER_ADDRESS to a dedicated multisig. This owner can approve
+or revoke official collection integrations. It cannot change the fixed 0.00005 ETH fee
+or the FeeVault's immutable treasury.
+
+FUTURE PRODUCTION DEPLOYMENTS
+-----------------------------
+The normal `npm run deploy:protocol` path now deploys:
+1. RHBurnerPassFeeVaultV2 (fixed 0.00005 ETH fee)
+2. RHBurnerPassOfficialIntegrationRegistry
+3. RHBurnerPassRegistryV2
+4. one-time canonical Registry binding
+
+Registry V2 refuses NEW burner authorizations for non-official targets on-chain.
+Revocation is always allowed.
+
+SECURITY NOTE
+-------------
+Upgradeable proxy mint contracts need extra review because the proxy runtime bytecode can
+stay unchanged while its implementation changes. Prefer non-upgradeable official targets
+unless proxy upgrade controls have been explicitly reviewed.

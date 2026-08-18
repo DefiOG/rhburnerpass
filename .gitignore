@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+.env.local
+artifacts/*.json
+allowlist.json
+allowlist-output.json
+.DS_Store
