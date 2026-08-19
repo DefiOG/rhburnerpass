@@ -70,6 +70,11 @@ export function VaultPortal() {
 
   const reviewReady = !baseActionReason
   const explorerBase = config?.network.explorerUrl ?? robinhoodChain.blockExplorers.default.url
+  const repoBase = (config?.repoUrl ?? 'https://github.com/DefiOG/rhburnerpass').replace(/\/$/, '')
+  const integrationGuideUrl = `${repoBase}/blob/main/INTEGRATION.md`
+  const referenceSourceUrl = `${repoBase}/blob/main/contracts/RHBurnerPassReferenceMint.sol`
+  const referenceMintAddress = '0x94FEa8Ea67f8B2B72c9c196aCAFd2C0471F30309'
+  const referenceExplorerUrl = `${explorerBase}/address/${referenceMintAddress}`
 
   async function submitAuthorization(enabled: boolean) {
     const blockingReason = enabled ? authorizeReason : baseActionReason
@@ -172,6 +177,7 @@ export function VaultPortal() {
       <nav className="nav">
         <a className="brand" href="#/"><span className="flame">🔥</span> RHBurnerPass</a>
         <div className="nav-actions">
+          <a className="developer-nav-link" href="#developers">Developers</a>
           <span className="network-dot live">Mainnet</span>
           <WalletControl />
         </div>
@@ -270,6 +276,47 @@ export function VaultPortal() {
         <article><span>01</span><h3>Vault keeps eligibility</h3><p>Your allowlist or holder identity remains attached to the vault.</p></article>
         <article><span>02</span><h3>Burner takes the risk</h3><p>The low-value wallet—not your vault—interacts with the collection frontend.</p></article>
         <article><span>03</span><h3>Claims stay honest</h3><p>Compatible mints count allocation against the vault, even across multiple burners.</p></article>
+      </section>
+
+      <section className="developer-entry" id="developers">
+        <div className="developer-copy">
+          <span className="eyebrow">FOR COLLECTION DEVELOPERS</span>
+          <h2>Give collectors a safer way to mint.</h2>
+          <p>
+            Integrate RHBurnerPass so a holder can keep allowlist or NFT-holder eligibility on a vault wallet
+            while a disposable burner executes the mint and receives the NFT.
+          </p>
+
+          <div className="developer-steps" aria-label="Developer integration steps">
+            <div><span>1</span><p><strong>Integrate the gate</strong><small>Resolve eligibility and claim usage to the vault.</small></p></div>
+            <div><span>2</span><p><strong>Deploy & verify</strong><small>Bind the canonical RegistryV2 and FeeVaultV2.</small></p></div>
+            <div><span>3</span><p><strong>Become official</strong><small>Submit the exact deployed runtime code hash for Safe approval.</small></p></div>
+          </div>
+
+          <div className="developer-actions">
+            <a className="developer-button primary-link" href={integrationGuideUrl} target="_blank" rel="noreferrer">
+              Integration guide ↗
+            </a>
+            <a className="developer-button" href={referenceSourceUrl} target="_blank" rel="noreferrer">
+              Reference contract ↗
+            </a>
+          </div>
+        </div>
+
+        <aside className="developer-proof">
+          <span className="proof-label">MAINNET PROOF</span>
+          <strong>Production reference integration</strong>
+          <code>{referenceMintAddress}</code>
+          <ul>
+            <li>Source verified on Robinhood Chain</li>
+            <li>Approved by the RHBurnerPass 2-of-3 Safe</li>
+            <li>Protected mint completed on mainnet</li>
+            <li>0.00005 ETH protocol fee confirmed</li>
+            <li>Vault revocation confirmed on-chain</li>
+          </ul>
+          <a href={referenceExplorerUrl} target="_blank" rel="noreferrer">View reference mint on Blockscout ↗</a>
+          <small>RHBurnerPass has not received an independent professional audit.</small>
+        </aside>
       </section>
 
       <footer>
