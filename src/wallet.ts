@@ -1,6 +1,6 @@
 import { createConfig, http, type CreateConnectorFn } from 'wagmi'
 import { injected, walletConnect } from 'wagmi/connectors'
-import { robinhoodChainTestnet } from './rhburnerpass'
+import { robinhoodChain } from './rhburnerpass'
 
 const configuredProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID?.trim()
 
@@ -13,11 +13,11 @@ if (configuredProjectId) {
 }
 
 export const wagmiConfig = createConfig({
-  chains: [robinhoodChainTestnet],
+  chains: [robinhoodChain],
   connectors,
   multiInjectedProviderDiscovery: true,
   transports: {
-    [robinhoodChainTestnet.id]: http(robinhoodChainTestnet.rpcUrls.default.http[0]),
+    [robinhoodChain.id]: http(robinhoodChain.rpcUrls.default.http[0]),
   },
   ssr: false,
 })

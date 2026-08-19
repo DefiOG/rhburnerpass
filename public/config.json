@@ -1,15 +1,14 @@
 {
   "network": {
-    "chainId": 46630,
-    "name": "Robinhood Chain Testnet",
-    "rpcUrl": "https://rpc.testnet.chain.robinhood.com",
-    "explorerUrl": "https://explorer.testnet.chain.robinhood.com"
+    "chainId": 4663,
+    "name": "Robinhood Chain",
+    "rpcUrl": "https://rpc.mainnet.chain.robinhood.com",
+    "explorerUrl": "https://robinhoodchain.blockscout.com"
   },
   "contracts": {
-    "registry": "0x9c991dcdd4b63e1874e866e7cea8ac02e5ba1bdc",
-    "feeVault": "0xf0ccb457f4dc2ca50753cb9abc0dd5d9a916ba00",
-    "demoMint": "0xb33a2d380a0fbeb72a6b4b4187a449eefab04004",
-    "officialIntegrationRegistry": "0x52155b1d12e5408de5f916cafca601331d26fe25"
+    "registry": "0xA6D25fD2214C6c136599F65bDc07DE77A5f67d6e",
+    "feeVault": "0xd3e873CCE414a0a24F9E888236faCe40ab6C02DA",
+    "officialIntegrationRegistry": "0xb8d1f6F919B5A19B1EA1036f2358f21184f4C282"
   },
   "feePerNftEth": "0.00005",
   "repoUrl": "https://github.com/DefiOG/rhburnerpass"

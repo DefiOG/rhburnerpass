@@ -8,20 +8,19 @@ import {
   type WalletClient,
 } from 'viem'
 
-export const robinhoodChainTestnet = defineChain({
-  id: 46630,
-  name: 'Robinhood Chain Testnet',
+export const robinhoodChain = defineChain({
+  id: 4663,
+  name: 'Robinhood Chain',
   nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-  rpcUrls: { default: { http: ['https://rpc.testnet.chain.robinhood.com'] } },
+  rpcUrls: { default: { http: ['https://rpc.mainnet.chain.robinhood.com'] } },
   blockExplorers: {
-    default: { name: 'Robinhood Chain Testnet Explorer', url: 'https://explorer.testnet.chain.robinhood.com' },
+    default: { name: 'Robinhood Chain Explorer', url: 'https://robinhoodchain.blockscout.com' },
   },
-  testnet: true,
 })
 
 export type RHBPConfig = {
   network: { chainId: number; name: string; rpcUrl: string; explorerUrl: string }
-  contracts: { registry: string; feeVault: string; demoMint: string; officialIntegrationRegistry?: string }
+  contracts: { registry: string; feeVault: string; demoMint?: string; officialIntegrationRegistry?: string }
   feePerNftEth: string
   repoUrl?: string
 }
@@ -100,8 +99,8 @@ export const demoMintAbi = [
 ] as const
 
 export const publicClient = createPublicClient({
-  chain: robinhoodChainTestnet,
-  transport: http(robinhoodChainTestnet.rpcUrls.default.http[0]),
+  chain: robinhoodChain,
+  transport: http(robinhoodChain.rpcUrls.default.http[0]),
 })
 
 export async function loadConfig(): Promise<RHBPConfig> {
@@ -131,8 +130,8 @@ export function assertWriteSession(
   if (!walletAccount || walletAccount.toLowerCase() !== displayedAccount.toLowerCase()) {
     throw new Error('Wallet account changed. Review the current vault address and try again.')
   }
-  if (chainId !== robinhoodChainTestnet.id) {
-    throw new Error(`Switch to ${robinhoodChainTestnet.name} before submitting.`)
+  if (chainId !== robinhoodChain.id) {
+    throw new Error(`Switch to ${robinhoodChain.name} before submitting.`)
   }
 }
 
@@ -147,7 +146,7 @@ export async function setBurner(
   assertWriteSession(displayedAccount, client.account?.address, client.chain?.id)
   return client.writeContract({
     account: displayedAccount,
-    chain: robinhoodChainTestnet,
+    chain: robinhoodChain,
     address: requireAddress(registry, 'Registry'),
     abi: registryAbi,
     functionName: 'setBurner',
@@ -267,7 +266,7 @@ export async function mintDemo(
   const address = requireAddress(demoMint, 'Demo mint')
   const quote = await quoteDemoMint(demoMint, displayedAccount, vault, quantity)
   const hash = await client.writeContract({
-    account: displayedAccount, chain: robinhoodChainTestnet, address, abi: demoMintAbi,
+    account: displayedAccount, chain: robinhoodChain, address, abi: demoMintAbi,
     functionName: 'mint', args: [vault, maxAllocation, quantity, proof], value: quote.total,
   })
   return { hash, quote }

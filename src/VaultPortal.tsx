@@ -7,7 +7,7 @@ import {
   assertOfficialTarget,
   isAuthorized,
   publicClient,
-  robinhoodChainTestnet,
+  robinhoodChain,
   setBurner,
 } from './rhburnerpass'
 import { WalletControl } from './WalletControl'
@@ -42,10 +42,6 @@ export function VaultPortal() {
   currentOperation.current = operationKey
 
   useEffect(() => {
-    if (config?.contracts.demoMint && !target) setTarget(config.contracts.demoMint)
-  }, [config, target])
-
-  useEffect(() => {
     setVerified(null)
     setBusy(false)
     setStatus(idleStatus)
@@ -57,14 +53,14 @@ export function VaultPortal() {
     setStatus(idleStatus)
   }, [burner, target])
 
-  const wrongNetwork = isConnected && chainId !== robinhoodChainTestnet.id
+  const wrongNetwork = isConnected && chainId !== robinhoodChain.id
   const inputError = authorizationInputError(address ?? '', burner, target)
   const registryReady = Boolean(config && isAddress(config.contracts.registry))
   const officialRegistryReady = Boolean(config && isAddress(config.contracts.officialIntegrationRegistry ?? ''))
   const baseActionReason = !registryReady
     ? 'The registry configuration is unavailable.'
     : wrongNetwork
-      ? `Switch to ${robinhoodChainTestnet.name}.`
+      ? `Switch to ${robinhoodChain.name}.`
       : address && !walletClient
         ? 'The wallet session is still initializing.'
       : inputError
@@ -73,7 +69,7 @@ export function VaultPortal() {
     : null)
 
   const reviewReady = !baseActionReason
-  const explorerBase = config?.network.explorerUrl ?? robinhoodChainTestnet.blockExplorers.default.url
+  const explorerBase = config?.network.explorerUrl ?? robinhoodChain.blockExplorers.default.url
 
   async function submitAuthorization(enabled: boolean) {
     const blockingReason = enabled ? authorizeReason : baseActionReason
@@ -176,7 +172,7 @@ export function VaultPortal() {
       <nav className="nav">
         <a className="brand" href="#/"><span className="flame">🔥</span> RHBurnerPass</a>
         <div className="nav-actions">
-          <span className="network-dot live">Testnet</span>
+          <span className="network-dot live">Mainnet</span>
           <WalletControl />
         </div>
       </nav>
@@ -277,8 +273,11 @@ export function VaultPortal() {
       </section>
 
       <footer>
-        <div><strong>🔥 RHBurnerPass</strong><p>Experimental, unaudited, and testnet-only.</p></div>
-        <a href="#/demo">Developer testnet demo</a>
+        <div>
+          <strong>🔥 RHBurnerPass</strong>
+          <p>Robinhood Chain mainnet. Independent community project; not affiliated with or endorsed by Robinhood Markets, Inc.</p>
+        </div>
+        <a href={config?.repoUrl ?? 'https://github.com/DefiOG/rhburnerpass'} target="_blank" rel="noreferrer">Source code ↗</a>
       </footer>
     </main>
   )

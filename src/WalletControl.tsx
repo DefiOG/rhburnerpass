@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAccount, useConnect, useDisconnect, useSwitchChain } from 'wagmi'
-import { robinhoodChainTestnet } from './rhburnerpass'
+import { robinhoodChain } from './rhburnerpass'
 import { walletConnectEnabled } from './wallet'
 
 function short(address: string) {
@@ -14,7 +14,7 @@ export function WalletControl() {
   const { switchChain, isPending: isSwitching } = useSwitchChain()
   const [modalOpen, setModalOpen] = useState(false)
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
-  const wrongNetwork = isConnected && chainId !== robinhoodChainTestnet.id
+  const wrongNetwork = isConnected && chainId !== robinhoodChain.id
 
   useEffect(() => {
     if (isConnected) setModalOpen(false)
@@ -41,11 +41,11 @@ export function WalletControl() {
         <button
           className="network-switch"
           disabled={isSwitching}
-          onClick={() => switchChain({ chainId: robinhoodChainTestnet.id })}
+          onClick={() => switchChain({ chainId: robinhoodChain.id })}
         >
           {isSwitching ? 'Switching…' : 'Switch network'}
         </button>
-      ) : isConnected ? <span className="chain-chip">Robinhood Testnet</span> : null}
+      ) : isConnected ? <span className="chain-chip">Robinhood Chain</span> : null}
 
       {isConnected && address ? (
         <div className="account-menu-wrap">

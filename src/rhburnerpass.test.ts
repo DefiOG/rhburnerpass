@@ -3,7 +3,7 @@ import type { Address, WalletClient } from 'viem'
 import {
   assertWriteSession,
   authorizationInputError,
-  robinhoodChainTestnet,
+  robinhoodChain,
   setBurner,
 } from './rhburnerpass'
 
@@ -28,19 +28,19 @@ describe('authorization input safety', () => {
 
 describe('wallet write session safety', () => {
   it('rejects an account that differs from the address under review', () => {
-    expect(() => assertWriteSession(vault, burner, robinhoodChainTestnet.id))
+    expect(() => assertWriteSession(vault, burner, robinhoodChain.id))
       .toThrow('Wallet account changed')
   })
 
   it('rejects writes on another chain', () => {
-    expect(() => assertWriteSession(vault, vault, 1)).toThrow(`Switch to ${robinhoodChainTestnet.name}`)
+    expect(() => assertWriteSession(vault, vault, 1)).toThrow(`Switch to ${robinhoodChain.name}`)
   })
 
   it('uses the reviewed address as the write sender', async () => {
     const writeContract = vi.fn().mockResolvedValue(`0x${'a'.repeat(64)}`)
     const client = {
       account: { address: vault },
-      chain: { id: robinhoodChainTestnet.id },
+      chain: { id: robinhoodChain.id },
       writeContract,
     } as unknown as WalletClient
 
