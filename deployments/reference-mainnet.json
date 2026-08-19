@@ -1,0 +1,17 @@
+{
+  "network": "Robinhood Chain",
+  "chainId": 4663,
+  "contract": "RHBurnerPassReferenceMint",
+  "address": "0x94FEa8Ea67f8B2B72c9c196aCAFd2C0471F30309",
+  "deploymentTx": "0xa6d231d263d93031094a90ba66d7752adba906599475775f54e142c71f4de8bc",
+  "deploymentBlock": "40852037",
+  "deployer": "0x42A6ED4FEfffc4D0f12312453e6E36d42A1Eb16B",
+  "registry": "0xA6D25fD2214C6c136599F65bDc07DE77A5f67d6e",
+  "feeVault": "0xd3e873CCE414a0a24F9E888236faCe40ab6C02DA",
+  "officialIntegrationRegistry": "0xb8d1f6F919B5A19B1EA1036f2358f21184f4C282",
+  "projectTreasury": "0xA70bDD510A6D339318FdBCaFb60862FDD39AbA0b",
+  "merkleRoot": "0x16538246712b55f84a4af1bab08dce16a960a9924402f4f6d3745f77a5fa7864",
+  "mintPriceWei": "0",
+  "maxSupply": "100",
+  "protocolFeePerNftWei": "50000000000000"
+}
