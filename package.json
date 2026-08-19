@@ -11,6 +11,8 @@
     "contracts:compile": "node scripts/compile.mjs",
     "allowlist": "node scripts/make-allowlist.mjs",
     "deploy:protocol": "node --env-file=.env scripts/deploy-protocol.mjs",
+    "deploy:protocol:testnet": "node --env-file=.env scripts/deploy-protocol.mjs --network=testnet",
+    "deploy:protocol:mainnet": "node --env-file=.env.mainnet scripts/deploy-protocol.mjs --network=mainnet",
     "deploy:demo": "node --env-file=.env scripts/deploy-demo.mjs",
     "deploy:official-registry": "node --env-file=.env scripts/deploy-official-registry.mjs",
     "approve:integration": "node --env-file=.env scripts/approve-integration.mjs",
