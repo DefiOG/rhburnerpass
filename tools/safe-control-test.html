@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RHBurnerPass Safe Control Test</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 860px; margin: 40px auto; padding: 0 20px; line-height: 1.45; }
+      button { padding: 10px 14px; margin: 6px 6px 6px 0; cursor: pointer; }
+      pre { background:#111; color:#eee; padding:16px; overflow:auto; white-space:pre-wrap; word-break:break-all; }
+      .warn { border:1px solid #c77; padding:12px; }
+      .ok { border:1px solid #7a7; padding:12px; }
+      .wallet { margin:8px 0; }
+    </style>
+  </head>
+  <body>
+    <h1>RHBurnerPass Safe Control Test</h1>
+    <p class="warn"><strong>Local test tool.</strong> This page creates a harmless Safe transaction that sends <strong>0 ETH</strong> with no calldata to the deployment wallet. Signing does not execute it.</p>
+
+    <h2>Expected Safe</h2>
+    <pre id="expected"></pre>
+
+    <h2>1. Choose an injected wallet</h2>
+    <div id="wallets">Waiting for EIP-6963 wallets…</div>
+
+    <h2>2. Connected owner</h2>
+    <pre id="connected">Not connected.</pre>
+
+    <h2>3. Test transaction</h2>
+    <pre id="tx">Not prepared.</pre>
+    <button id="sign" disabled>Sign 0-value Safe test transaction</button>
+
+    <h2>4. Signature</h2>
+    <pre id="signature">No signature yet.</pre>
+    <button id="copy1" disabled>Copy as signature 1 env block</button>
+    <button id="copy2" disabled>Copy as signature 2 env block</button>
+
+    <p class="ok">Nothing on this page can execute the Safe transaction. Execution is a separate Node script with its own safety lock.</p>
+
+    <script type="module" src="/tools/safe-control-test.js"></script>
+  </body>
+</html>
