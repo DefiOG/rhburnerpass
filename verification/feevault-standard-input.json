@@ -1,0 +1,22 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "RHBurnerPassFeeVaultV2.sol": {
+      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\n/// @title RHBurnerPassFeeVaultV2\n/// @notice Production-design fixed per-NFT protocol fee collector for official RHBurnerPass integrations.\n/// @dev The fee is permanently fixed in bytecode. Treasury is supplied once at deployment and is immutable forever.\ncontract RHBurnerPassFeeVaultV2 {\n    uint256 public constant FEE_PER_NFT = 0.00005 ether;\n\n    address public immutable treasury;\n\n    error InvalidTreasury();\n    error WrongFee();\n    error OnlyTreasury();\n    error WithdrawFailed();\n    error ZeroQuantity();\n\n    event ProtocolFeeCollected(\n        address indexed mintContract,\n        address indexed vault,\n        address indexed burner,\n        uint256 quantity,\n        uint256 fee\n    );\n    event FeesWithdrawn(address indexed treasury, uint256 amount);\n\n    constructor(address treasury_) {\n        if (treasury_ == address(0)) revert InvalidTreasury();\n        treasury = treasury_;\n    }\n\n    function quote(uint256 quantity) public pure returns (uint256) {\n        return FEE_PER_NFT * quantity;\n    }\n\n    function collect(address vault, address burner, uint256 quantity) external payable {\n        if (quantity == 0) revert ZeroQuantity();\n        uint256 expected = quote(quantity);\n        if (msg.value != expected) revert WrongFee();\n        emit ProtocolFeeCollected(msg.sender, vault, burner, quantity, msg.value);\n    }\n\n    function withdraw() external {\n        if (msg.sender != treasury) revert OnlyTreasury();\n        uint256 amount = address(this).balance;\n        (bool ok,) = payable(treasury).call{value: amount}(\"\");\n        if (!ok) revert WithdrawFailed();\n        emit FeesWithdrawn(treasury, amount);\n    }\n}\n"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode.object"
+        ]
+      }
+    }
+  }
+}

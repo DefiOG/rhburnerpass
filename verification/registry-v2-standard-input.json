@@ -1,0 +1,22 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "RHBurnerPassRegistryV2.sol": {
+      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ninterface IRHBurnerPassOfficialIntegrationRegistryView {\n    function isOfficialIntegration(address target) external view returns (bool);\n}\n\n/// @title RHBurnerPassRegistryV2\n/// @notice Vault-to-burner registry that only enables delegations for official integrations.\n/// @dev Revocation is always allowed, even after an integration is removed from the official registry.\ncontract RHBurnerPassRegistryV2 {\n    mapping(bytes32 delegationKey => bool enabled) private _delegations;\n\n    IRHBurnerPassOfficialIntegrationRegistryView public immutable officialIntegrationRegistry;\n\n    error ZeroAddress();\n    error VaultCannotBeBurner();\n    error UnofficialTarget();\n\n    event BurnerAuthorizationSet(\n        address indexed vault,\n        address indexed burner,\n        address indexed target,\n        bool enabled\n    );\n\n    constructor(address officialIntegrationRegistry_) {\n        if (officialIntegrationRegistry_ == address(0)) revert ZeroAddress();\n        officialIntegrationRegistry = IRHBurnerPassOfficialIntegrationRegistryView(officialIntegrationRegistry_);\n    }\n\n    function setBurner(address burner, address target, bool enabled) external {\n        if (burner == address(0) || target == address(0)) revert ZeroAddress();\n        if (burner == msg.sender) revert VaultCannotBeBurner();\n        if (enabled && !officialIntegrationRegistry.isOfficialIntegration(target)) revert UnofficialTarget();\n\n        _delegations[_key(msg.sender, burner, target)] = enabled;\n        emit BurnerAuthorizationSet(msg.sender, burner, target, enabled);\n    }\n\n    function isAuthorized(address vault, address burner, address target) external view returns (bool) {\n        if (vault == burner) return true;\n        return _delegations[_key(vault, burner, target)];\n    }\n\n    function delegationKey(address vault, address burner, address target) external pure returns (bytes32) {\n        return _key(vault, burner, target);\n    }\n\n    function _key(address vault, address burner, address target) private pure returns (bytes32) {\n        return keccak256(abi.encode(vault, burner, target));\n    }\n}\n"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode.object"
+        ]
+      }
+    }
+  }
+}
