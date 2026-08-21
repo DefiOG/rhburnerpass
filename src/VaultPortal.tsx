@@ -4,6 +4,7 @@ import { useAccount, useWalletClient } from 'wagmi'
 import { useAppConfig } from './hooks'
 import {
   authorizationInputError,
+  assertFactoryTarget,
   assertOfficialTarget,
   isAuthorized,
   publicClient,
@@ -53,9 +54,14 @@ export function VaultPortal() {
     setStatus(idleStatus)
   }, [burner, target])
 
+  useEffect(() => {
+    if (config?.sampleMint && !target) setTarget(config.sampleMint)
+  }, [config, target])
+
   const wrongNetwork = isConnected && chainId !== robinhoodChain.id
   const inputError = authorizationInputError(address ?? '', burner, target)
   const registryReady = Boolean(config && isAddress(config.contracts.registry))
+  const factoryReady = Boolean(config && isAddress(config.contracts.factory ?? ''))
   const officialRegistryReady = Boolean(config && isAddress(config.contracts.officialIntegrationRegistry ?? ''))
   const baseActionReason = !registryReady
     ? 'The registry configuration is unavailable.'
@@ -64,8 +70,8 @@ export function VaultPortal() {
       : address && !walletClient
         ? 'The wallet session is still initializing.'
       : inputError
-  const authorizeReason = baseActionReason ?? (!officialRegistryReady
-    ? 'Official integration registry is not configured yet. New authorizations are disabled; verification and revocation remain available.'
+  const authorizeReason = baseActionReason ?? (!factoryReady && !officialRegistryReady
+    ? 'No canonical integration authority is configured. New authorizations are disabled.'
     : null)
 
   const reviewReady = !baseActionReason
@@ -87,13 +93,17 @@ export function VaultPortal() {
       setBusy(true)
       setVerified(null)
       if (enabled) {
-        setStatus({ kind: 'pending', message: 'Checking official integration approval, code hash, Registry, and FeeVault…' })
-        await assertOfficialTarget(
-          targetAddress,
-          config.contracts.registry,
-          config.contracts.feeVault,
-          config.contracts.officialIntegrationRegistry ?? '',
-        )
+        setStatus({ kind: 'pending', message: config.contracts.factory ? 'Checking canonical Factory mint and protocol bindings…' : 'Checking official integration approval, code hash, Registry, and FeeVault…' })
+        if (config.contracts.factory) {
+          await assertFactoryTarget(targetAddress, config.contracts.factory, config.contracts.registry, config.contracts.feeVault)
+        } else {
+          await assertOfficialTarget(
+            targetAddress,
+            config.contracts.registry,
+            config.contracts.feeVault,
+            config.contracts.officialIntegrationRegistry ?? '',
+          )
+        }
         if (currentOperation.current !== submittedOperation) return
       }
 
@@ -123,11 +133,16 @@ export function VaultPortal() {
 
       setVerified(authorized)
       if (authorized !== enabled) throw new Error('Transaction confirmed, but the registry state did not match the requested change.')
+      if (enabled) {
+        sessionStorage.setItem('rhbp:vault', address)
+        sessionStorage.setItem('rhbp:burner', burnerAddress)
+        sessionStorage.setItem('rhbp:mint', targetAddress)
+      }
       setStatus({
         kind: 'success',
         message: enabled
-          ? 'Burner authorized for this target only. You can now disconnect the vault.'
-          : 'Scoped burner authorization revoked.',
+          ? 'Authorized. Disconnect this vault, switch to the burner, then continue to mint.'
+          : 'Authorization revoked. This burner can no longer mint for this vault on this target.',
         hash,
       })
     } catch (caught: unknown) {
@@ -177,9 +192,9 @@ export function VaultPortal() {
       <nav className="nav">
         <a className="brand" href="#/"><span className="flame">🔥</span> RHBurnerPass</a>
         <div className="nav-actions">
-          <a className="developer-nav-link" href="#developers">Developers</a>
-          <span className="network-dot live">Mainnet</span>
-          <WalletControl />
+          <a className="developer-nav-link" href="#/mint">Burner mint</a><a className="developer-nav-link" href="#developers">Developers</a>
+          <span className="network-dot live">{robinhoodChain.id === 46630 ? 'Testnet' : 'Mainnet'}</span>
+          <WalletControl role="vault" />
         </div>
       </nav>
 
@@ -201,7 +216,7 @@ export function VaultPortal() {
           <div className={address ? 'complete' : 'active'}><span>1</span><p><strong>Connect vault</strong><small>This trusted portal is the only site your vault visits.</small></p></div>
           <div className={!address ? '' : reviewReady ? 'complete' : 'active'}><span>2</span><p><strong>Set the scope</strong><small>One burner and one compatible mint contract.</small></p></div>
           <div className={status.kind === 'success' ? 'complete' : reviewReady ? 'active' : ''}><span>3</span><p><strong>Authorize or revoke</strong><small>Review the exact addresses before signing.</small></p></div>
-          <div><span>4</span><p><strong>Disconnect vault</strong><small>The burner mints later from the collection’s site.</small></p></div>
+          <div className={verified === true ? 'active' : ''}><span>4</span><p><strong>Disconnect vault</strong><small>Then switch to the burner and continue to the collection mint.</small></p></div>
         </aside>
 
         <article className="card authorization-card">
@@ -242,7 +257,7 @@ export function VaultPortal() {
               disabled={busy}
               spellCheck={false}
             />
-            <small id="target-help">Authorization applies only to this exact contract address. New authorizations require an on-chain official integration approval.</small>
+            <small id="target-help">Authorization applies only to this exact contract address. Factory-created v2 mints are recognized automatically; legacy v1 integrations use official approval.</small>
           </label>
 
           <div className={`review-box ${scopeSummary ? 'ready' : ''}`}>
@@ -268,6 +283,9 @@ export function VaultPortal() {
             <span>{status.message}</span>
             {status.hash && <a href={`${explorerBase}/tx/${status.hash}`} target="_blank" rel="noreferrer">View transaction ↗</a>}
             {verified !== null && <strong>{verified ? 'Registry: authorized' : 'Registry: not authorized'}</strong>}
+            {verified === true && status.kind === 'success' && (
+              <a className="status-cta" href="#/mint">Continue to burner mint →</a>
+            )}
           </div>
         </article>
       </section>
@@ -281,16 +299,16 @@ export function VaultPortal() {
       <section className="developer-entry" id="developers">
         <div className="developer-copy">
           <span className="eyebrow">FOR COLLECTION DEVELOPERS</span>
-          <h2>Give collectors a safer way to mint.</h2>
+          <h2>Deploy a protected mint. Earn 10% of RHBP fees.</h2>
           <p>
-            Integrate RHBurnerPass so a holder can keep allowlist or NFT-holder eligibility on a vault wallet
-            while a disposable burner executes the mint and receives the NFT.
+            Use the self-service Factory to deploy a canonical RHBurnerPass mint with no manual approval queue.
+            Your payout wallet receives 10% of the RHBP fee generated by protected mints through your collection.
           </p>
 
           <div className="developer-steps" aria-label="Developer integration steps">
-            <div><span>1</span><p><strong>Integrate the gate</strong><small>Resolve eligibility and claim usage to the vault.</small></p></div>
-            <div><span>2</span><p><strong>Deploy & verify</strong><small>Bind the canonical RegistryV2 and FeeVaultV2.</small></p></div>
-            <div><span>3</span><p><strong>Become official</strong><small>Submit the exact deployed runtime code hash for Safe approval.</small></p></div>
+            <div><span>1</span><p><strong>Configure locally</strong><small>Set collection details, allowlist, mint price, and your 10% payout wallet.</small></p></div>
+            <div><span>2</span><p><strong>Deploy through Factory</strong><small>The canonical Registry and FeeVault bindings are wired automatically.</small></p></div>
+            <div><span>3</span><p><strong>Launch your mint page</strong><small>Collectors authorize once with the vault, then mint from a burner.</small></p></div>
           </div>
 
           <div className="developer-actions">
@@ -322,7 +340,7 @@ export function VaultPortal() {
       <footer>
         <div>
           <strong>🔥 RHBurnerPass</strong>
-          <p>Robinhood Chain mainnet. Independent community project; not affiliated with or endorsed by Robinhood Markets, Inc.</p>
+          <p>{robinhoodChain.id === 46630 ? 'Robinhood Chain testnet' : 'Robinhood Chain mainnet'}. Independent community project; not affiliated with or endorsed by Robinhood Markets, Inc.</p>
         </div>
         <a href={config?.repoUrl ?? 'https://github.com/DefiOG/rhburnerpass'} target="_blank" rel="noreferrer">Source code ↗</a>
       </footer>

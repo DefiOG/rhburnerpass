@@ -1,0 +1,38 @@
+{
+  "network": "Robinhood Chain Testnet",
+  "chainId": 46630,
+  "compilerVersion": "v0.8.36+commit.8a079791",
+  "optimizer": {
+    "enabled": true,
+    "runs": 200
+  },
+  "contracts": [
+    {
+      "contractName": "RHBurnerPassFactoryV2",
+      "sourceName": "RHBurnerPassFactoryV2.sol",
+      "address": "0xb9e49d214ad311d1710a8276c18dfd83b935b920",
+      "deploymentTx": "0x4b34ab109969f8adaa4c8f6b8db94089136f72999efbae0ea5ed302f549008d6",
+      "constructorArgs": "0000000000000000000000003ba68253e4038f6370026db6d457d4e9bb9d20f0",
+      "standardInputFile": "verification/v2-testnet/RHBurnerPassFactoryV2-standard-input.json",
+      "deployDataMatch": true
+    },
+    {
+      "contractName": "RHBurnerPassFeeVaultV3",
+      "sourceName": "RHBurnerPassFeeVaultV3.sol",
+      "address": "0x0e59cefe3c8b9da6d072b3b0b290eafed2fccd3e",
+      "deploymentTx": "0x2a27ec33521ca744224f256d4c675986fb4435ac92c2719896947c3b6e262214",
+      "constructorArgs": "0000000000000000000000003ba68253e4038f6370026db6d457d4e9bb9d20f0000000000000000000000000b9e49d214ad311d1710a8276c18dfd83b935b920",
+      "standardInputFile": "verification/v2-testnet/RHBurnerPassFeeVaultV3-standard-input.json",
+      "deployDataMatch": true
+    },
+    {
+      "contractName": "RHBurnerPassRegistryV3",
+      "sourceName": "RHBurnerPassRegistryV3.sol",
+      "address": "0x3e61ce5d3d96c59f67aa508367b2d14f26efb522",
+      "deploymentTx": "0x3793184b937cf6e97cbe7f535303037cfae2945416e4c58820c0a49d0ec37362",
+      "constructorArgs": "000000000000000000000000b9e49d214ad311d1710a8276c18dfd83b935b920",
+      "standardInputFile": "verification/v2-testnet/RHBurnerPassRegistryV3-standard-input.json",
+      "deployDataMatch": true
+    }
+  ]
+}

@@ -7,7 +7,7 @@ function short(address: string) {
   return `${address.slice(0, 6)}…${address.slice(-4)}`
 }
 
-export function WalletControl() {
+export function WalletControl({ role = 'wallet' }: { role?: 'vault' | 'burner' | 'wallet' }) {
   const { address, isConnected, chainId, connector: activeConnector } = useAccount()
   const { connectors, connect, error: connectError, isPending, variables } = useConnect()
   const { disconnect } = useDisconnect()
@@ -84,7 +84,7 @@ export function WalletControl() {
               <div><span className="eyebrow">SECURE CONNECTION</span><h2 id="wallet-modal-title">Choose a wallet</h2></div>
               <button className="modal-close" aria-label="Close wallet dialog" onClick={() => setModalOpen(false)}>×</button>
             </div>
-            <p className="modal-copy">Select the wallet that holds your vault identity. RHBurnerPass never asks for a seed phrase or private key.</p>
+            <p className="modal-copy">{role === 'vault' ? 'Connect the wallet that owns the allowlist or holder eligibility.' : role === 'burner' ? 'Connect the low-value burner that will send the mint transaction and receive the NFT.' : 'Connect the wallet you want to use.'} RHBurnerPass never asks for a seed phrase or private key.</p>
             <div className="wallet-options">
               {connectors.map((connector) => (
                 <button

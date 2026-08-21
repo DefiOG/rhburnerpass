@@ -191,3 +191,11 @@ Testnet demo tooling should not be treated as the production integration path.
 ## License
 
 MIT.
+
+## RHBurnerPass v2 self-service development
+
+The repository now includes an **undeployed v2 development stack** for permissionless, Factory-created protected mints with a fixed 90% protocol / 10% integrator split of the existing 0.00005 ETH delegated-mint fee. The currently deployed v1 mainnet contracts remain unchanged.
+
+Start with `V2_ARCHITECTURE.md` and `developer-kit/README.md`. Testnet protocol deployment uses `npm run deploy:v2:testnet`; after the Factory address is saved locally, developers can run `npm run mint:v2:testnet` for the local interactive mint builder.
+
+Do not treat the v2 addresses as canonical until the testnet regression flow is completed and a separate mainnet deployment is intentionally performed.

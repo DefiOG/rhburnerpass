@@ -1,0 +1,18 @@
+{
+  "network": {
+    "chainId": 46630,
+    "name": "Robinhood Chain Testnet",
+    "rpcUrl": "https://rpc.testnet.chain.robinhood.com",
+    "explorerUrl": "https://explorer.testnet.chain.robinhood.com"
+  },
+  "contracts": {
+    "registry": "0x3e61ce5d3d96c59f67aa508367b2d14f26efb522",
+    "feeVault": "0x0e59cefe3c8b9da6d072b3b0b290eafed2fccd3e",
+    "factory": "0xb9e49d214ad311d1710a8276c18dfd83b935b920"
+  },
+  "feePerNftEth": "0.00005",
+  "sampleMint": "0x6Ba2d7a30e05479BEA612850C4e0B52Da3bBb386",
+  "sampleVault": "0xFa184D6861d1A3b12D7Ae81B82eCB0233C3E5971",
+  "allowlistUrl": "/allowlist.v2-testnet.json",
+  "repoUrl": "https://github.com/DefiOG/rhburnerpass"
+}

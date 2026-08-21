@@ -324,3 +324,42 @@ footer a { color: #8fe5aa; text-decoration: none; }
   .developer-steps { grid-template-columns: 1fr; }
   .developer-nav-link { display: none; }
 }
+
+/* v2 protected mint page */
+.mint-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:18px 0; }
+.mint-stats > div { display:grid; gap:5px; padding:13px; border:1px solid #263c30; border-radius:12px; background:#0b1510; }
+.mint-stats span { color:#7f9187; font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
+.mint-stats strong { color:#e8f5ec; font-size:18px; }
+.quote strong { color:#dff8e7; }
+@media (max-width: 700px) { .mint-stats { grid-template-columns:repeat(2,1fr); } }
+
+/* v2 release-candidate UX polish */
+.compact-hero { padding-bottom: 44px; }
+.status-cta { display:inline-flex; width:max-content; margin-top:4px; padding:9px 12px; border-radius:9px; background:#72f29f; color:#06120a !important; font-weight:850 !important; }
+.compact-fields label { margin-top:14px; }
+.good-text { color:#72f29f !important; }
+.quantity-row { display:flex; align-items:center; justify-content:space-between; gap:20px; margin:18px 0; padding:15px 16px; border:1px solid #263c30; border-radius:14px; background:#0b1510; }
+.quantity-row > div:first-child { display:grid; gap:4px; }
+.field-title { color:#cbd7d0; font-size:13px; font-weight:800; }
+.quantity-row small { color:#71847a; }
+.quantity-control { display:flex; align-items:center; overflow:hidden; border:1px solid #355143; border-radius:11px; background:#07100b; }
+.quantity-control button { width:43px; height:41px; border:0; border-radius:0; background:#122218; color:#dff8e7; font-size:22px; }
+.quantity-control button:hover:not(:disabled) { background:#1a3323; }
+.quantity-control strong { min-width:48px; text-align:center; color:#fff; font-size:17px; }
+.mint-quote { grid-template-columns:1fr auto; align-items:center; }
+.mint-quote span { display:contents; }
+.mint-quote strong { text-align:right; }
+.mint-quote .quote-total { display:contents; }
+.mint-quote .quote-total::before { content:''; grid-column:1 / -1; border-top:1px solid #284435; margin:2px 0 4px; }
+.mint-quote small { grid-column:1 / -1; color:#71847a; line-height:1.45; }
+.mint-actions { align-items:center; }
+.large-action { min-height:48px; padding-inline:20px; font-size:14px; }
+.text-action { color:#8fe5aa; text-decoration:none; font-size:12px; font-weight:750; }
+.text-action:hover { text-decoration:underline; }
+@media (max-width:640px) {
+  .quantity-row { align-items:flex-start; flex-direction:column; }
+  .quantity-control { width:100%; justify-content:space-between; }
+  .quantity-control strong { flex:1; }
+  .mint-actions { align-items:stretch; flex-direction:column; }
+  .large-action { width:100%; }
+}

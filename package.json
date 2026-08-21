@@ -16,7 +16,13 @@
     "deploy:demo": "node --env-file=.env scripts/deploy-demo.mjs",
     "deploy:official-registry": "node --env-file=.env scripts/deploy-official-registry.mjs",
     "approve:integration": "node --env-file=.env scripts/approve-integration.mjs",
-    "harden:testnet": "node --env-file=.env scripts/harden-existing-testnet.mjs"
+    "harden:testnet": "node --env-file=.env scripts/harden-existing-testnet.mjs",
+    "deploy:v2:testnet": "node --env-file=.env scripts/deploy-protocol-v2.mjs --network=testnet",
+    "deploy:v2:mainnet": "node --env-file=.env.mainnet scripts/deploy-protocol-v2.mjs --network=mainnet",
+    "mint:v2:testnet": "node --env-file=.env scripts/create-v2-mint.mjs --network=testnet",
+    "mint:v2:mainnet": "node --env-file=.env.mainnet scripts/create-v2-mint.mjs --network=mainnet",
+    "verify:v2:testnet": "node --env-file=.env scripts/verify-v2-testnet.mjs",
+    "verify:v2:sources:testnet": "node --env-file=.env scripts/verify-v2-sources-testnet.mjs"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.4.0",

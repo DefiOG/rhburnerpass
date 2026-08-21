@@ -1,0 +1,48 @@
+{
+  "project": "RHBurnerPass",
+  "release": "v2-testnet",
+  "network": "Robinhood Chain Testnet",
+  "chainId": 46630,
+  "rpc": "https://rpc.testnet.chain.robinhood.com",
+  "explorer": "https://explorer.testnet.chain.robinhood.com",
+  "deployer": "0x3BA68253E4038F6370026db6d457d4E9BB9D20f0",
+  "treasury": "0x3BA68253E4038F6370026db6d457d4E9BB9D20f0",
+  "protocolOwner": "0x3BA68253E4038F6370026db6d457d4E9BB9D20f0",
+  "contracts": {
+    "factory": {
+      "name": "RHBurnerPassFactoryV2",
+      "address": "0xb9e49d214ad311d1710a8276c18dfd83b935b920",
+      "deploymentTx": "0x4b34ab109969f8adaa4c8f6b8db94089136f72999efbae0ea5ed302f549008d6"
+    },
+    "feeVault": {
+      "name": "RHBurnerPassFeeVaultV3",
+      "address": "0x0e59cefe3c8b9da6d072b3b0b290eafed2fccd3e",
+      "deploymentTx": "0x2a27ec33521ca744224f256d4c675986fb4435ac92c2719896947c3b6e262214"
+    },
+    "registry": {
+      "name": "RHBurnerPassRegistryV3",
+      "address": "0x3e61ce5d3d96c59f67aa508367b2d14f26efb522",
+      "deploymentTx": "0x3793184b937cf6e97cbe7f535303037cfae2945416e4c58820c0a49d0ec37362"
+    }
+  },
+  "factoryBindTx": "0x86e2d1d266d6a1f5e4d277aa5bcc359944fbabbd16b283e6fb0247e49abc8968",
+  "feeModel": {
+    "delegatedFeePerNftEth": "0.00005",
+    "protocolSharePercent": 90,
+    "partnerSharePercent": 10
+  },
+  "verification": {
+    "status": "passed",
+    "canonicalTestMint": "0xaFcCb5A3E213A70615a9092f68C52694C846791a",
+    "result": "ALL REQUIRED RHBP V2 TESTNET CHECKS PASSED"
+  },
+  "manualUiTest": {
+    "status": "passed",
+    "mint": "0x6Ba2d7a30e05479BEA612850C4e0B52Da3bBb386",
+    "mintTx": "0x0fdd2a759f874a49700128b2eb262d975dee76c6da175a700485c2627b69d7db",
+    "tokenId": "1",
+    "burner": "0x1A0916417B2BA49Bf4bf18907DB0c124f7008e7c",
+    "valueEth": "0.00005",
+    "note": "One-click vault authorization and burner mint UI completed successfully on Robinhood Chain Testnet."
+  }
+}

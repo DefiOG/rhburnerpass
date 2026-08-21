@@ -1,1 +1,1 @@
-{"root":["./src/app.tsx","./src/developerdemo.tsx","./src/vaultportal.tsx","./src/walletcontrol.tsx","./src/hooks.ts","./src/main.tsx","./src/rhburnerpass.test.ts","./src/rhburnerpass.ts","./src/vite-env.d.ts","./src/wallet.ts"],"version":"5.9.3"}
+{"root":["./src/app.tsx","./src/developerdemo.tsx","./src/mintpage.tsx","./src/vaultportal.tsx","./src/walletcontrol.tsx","./src/hooks.ts","./src/main.tsx","./src/rhburnerpass.test.ts","./src/rhburnerpass.ts","./src/vite-env.d.ts","./src/wallet.ts"],"version":"5.9.3"}

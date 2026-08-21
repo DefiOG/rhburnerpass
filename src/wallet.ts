@@ -17,7 +17,8 @@ export const wagmiConfig = createConfig({
   connectors,
   multiInjectedProviderDiscovery: true,
   transports: {
-    [robinhoodChain.id]: http(robinhoodChain.rpcUrls.default.http[0]),
+    46630: http('https://rpc.testnet.chain.robinhood.com'),
+    4663: http('https://rpc.mainnet.chain.robinhood.com'),
   },
   ssr: false,
 })
