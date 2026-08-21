@@ -11,3 +11,6 @@ allowlist-output.json
 
 # Local RHBurnerPass v2 mint-builder output
 mint-deployments/
+
+packages/sdk/dist/
+packages/react/dist/
