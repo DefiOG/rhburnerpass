@@ -1,0 +1,41 @@
+{
+  "network": "Robinhood Chain Mainnet",
+  "chainId": 4663,
+  "release": "v2.0.0-rc1",
+  "deployer": "0x42A6ED4FEfffc4D0f12312453e6E36d42A1Eb16B",
+  "treasury": "0xA70bDD510A6D339318FdBCaFb60862FDD39AbA0b",
+  "protocolOwner": "0xA70bDD510A6D339318FdBCaFb60862FDD39AbA0b",
+  "contracts": {
+    "factoryV2": "0x48bf0bfa8544acce021548b4d0a60b87a6358127",
+    "feeVaultV3": "0x2d86eeb6c2f8b5cdc29cdd0a4ad313109457d8f6",
+    "registryV3": "0x586a5e67439f2fa4ab51d511c8636788637b3b5f"
+  },
+  "transactions": {
+    "factoryDeploy": "0xd62d0f19d961d5b932fa2c388d9094e043f2f1b1c1bfb8f9f888114ae83c0e83",
+    "feeVaultDeploy": "0x97eac6d48d2b0a4eae05d68f3c3a30d977511c298862fb3409a4d7c00529de6a",
+    "registryDeploy": "0x1748b92d3180e9c0c6b73007c9c741da64adc74715bca689d4f2728d4d6c61b3",
+    "factoryBind": "0x04fe2aa9d5b81346bfd1153a8bf68f62afff236c929de8773193183b394bd3a6"
+  },
+  "fee": {
+    "delegatedFeePerNftEth": "0.00005",
+    "protocolSharePercent": 90,
+    "partnerSharePercent": 10
+  },
+  "sourceVerification": {
+    "factoryV2": "verified",
+    "feeVaultV3": "verified",
+    "registryV3": "verified"
+  },
+  "mainnetSmokeTest": {
+    "mintAddress": "0xCA371B745edF27C090a7C5DA4e379a3b3e392284",
+    "factoryCreateMintTx": "0x06f0cb0ff071cf811814e2de963e0b3492482c346a7b22cbc05d5b4130c61c0d",
+    "vault": "0x453f9bc74b696c923B0cB2e5ca238120F265d608",
+    "authorizationTx": "0xcd60c49c6dd9ed6115a14925a4ab57d850b6017c772304cc780c2d70ec1f2647",
+    "mintTx": "0x2bc5df102b64a85d40bf9edf04a19d16a5b6454b3f60e8b8c1eb1ab8499cbeba",
+    "maxAllocation": 2,
+    "mintQuantity": 1,
+    "mintPriceEth": "0",
+    "delegatedFeeEth": "0.00005"
+  },
+  "status": "mainnet-deployed-verified-smoke-tested"
+}

@@ -6,10 +6,13 @@
     "explorerUrl": "https://robinhoodchain.blockscout.com"
   },
   "contracts": {
-    "registry": "0xA6D25fD2214C6c136599F65bDc07DE77A5f67d6e",
-    "feeVault": "0xd3e873CCE414a0a24F9E888236faCe40ab6C02DA",
-    "officialIntegrationRegistry": "0xb8d1f6F919B5A19B1EA1036f2358f21184f4C282"
+    "registry": "0x586a5e67439f2fa4ab51d511c8636788637b3b5f",
+    "feeVault": "0x2d86eeb6c2f8b5cdc29cdd0a4ad313109457d8f6",
+    "factory": "0x48bf0bfa8544acce021548b4d0a60b87a6358127"
   },
   "feePerNftEth": "0.00005",
+  "sampleMint": "0xCA371B745edF27C090a7C5DA4e379a3b3e392284",
+  "sampleVault": "0x453f9bc74b696c923B0cB2e5ca238120F265d608",
+  "allowlistUrl": "/allowlist.v2-mainnet.json",
   "repoUrl": "https://github.com/DefiOG/rhburnerpass"
 }
