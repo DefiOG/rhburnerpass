@@ -7,11 +7,15 @@ import {
   assertFactoryTarget,
   assertOfficialTarget,
   isAuthorized,
+  loadCollections,
   publicClient,
   robinhoodChain,
   setBurner,
+  type CollectionEntry,
 } from './rhburnerpass'
 import { WalletControl } from './WalletControl'
+import { ActivePermissionCard, CollectionPicker, ConfirmPermissionStep, PermissionExplainer } from './onboarding'
+import { clearActivePermission, saveActivePermission, useActivePermission } from './permission'
 
 type ActionStatus = {
   kind: 'idle' | 'pending' | 'success' | 'error'
@@ -21,11 +25,19 @@ type ActionStatus = {
 
 const idleStatus: ActionStatus = {
   kind: 'idle',
-  message: 'Connect the vault wallet to create or revoke a scoped authorization.',
+  message: 'Connect your Safe Wallet to create or revoke a Permission.',
 }
 
 function short(address: string) {
   return `${address.slice(0, 6)}…${address.slice(-4)}`
+}
+
+function readCollectionParam(): string {
+  try {
+    return new URLSearchParams(window.location.search).get('collection')?.trim() ?? ''
+  } catch {
+    return ''
+  }
 }
 
 export function VaultPortal() {
@@ -37,6 +49,11 @@ export function VaultPortal() {
   const [verified, setVerified] = useState<boolean | null>(null)
   const [busy, setBusy] = useState(false)
   const [status, setStatus] = useState<ActionStatus>(idleStatus)
+  const [collections, setCollections] = useState<CollectionEntry[] | null>(null)
+  const [collectionsError, setCollectionsError] = useState('')
+  const [confirmingPermission, setConfirmingPermission] = useState(false)
+  const [showTechnical, setShowTechnical] = useState(false)
+  const [preselectPending, setPreselectPending] = useState(() => Boolean(readCollectionParam()))
   const sessionKey = `${address ?? ''}:${chainId ?? ''}`
   const operationKey = `${sessionKey}:${burner.toLowerCase()}:${target.toLowerCase()}`
   const currentOperation = useRef(operationKey)
@@ -55,8 +72,42 @@ export function VaultPortal() {
   }, [burner, target])
 
   useEffect(() => {
-    if (config?.sampleMint && !target) setTarget(config.sampleMint)
+    if (config?.sampleMint && !target && !readCollectionParam()) setTarget(config.sampleMint)
   }, [config, target])
+
+  useEffect(() => {
+    loadCollections(config?.collectionsUrl)
+      .then((entries) => setCollections(entries))
+      .catch((err: Error) => setCollectionsError(err.message))
+  }, [config])
+
+  // A ?collection=0x… link is never trusted at face value: it must pass the
+  // same canonical Factory / official-integration validation as manual entry
+  // before it is shown as selected.
+  useEffect(() => {
+    const candidate = readCollectionParam()
+    if (!candidate || !config || !isAddress(candidate)) {
+      setPreselectPending(false)
+      return
+    }
+    let alive = true
+    ;(async () => {
+      try {
+        if (config.contracts.factory) {
+          await assertFactoryTarget(candidate as Address, config.contracts.factory, config.contracts.registry, config.contracts.feeVault)
+        } else {
+          await assertOfficialTarget(candidate as Address, config.contracts.registry, config.contracts.feeVault, config.contracts.officialIntegrationRegistry ?? '')
+        }
+        if (!alive) return
+        setTarget(candidate)
+      } catch (err) {
+        if (alive) setCollectionsError(err instanceof Error ? err.message : 'The linked collection could not be validated.')
+      } finally {
+        if (alive) setPreselectPending(false)
+      }
+    })()
+    return () => { alive = false }
+  }, [config])
 
   const wrongNetwork = isConnected && chainId !== robinhoodChain.id
   const inputError = authorizationInputError(address ?? '', burner, target)
@@ -134,15 +185,15 @@ export function VaultPortal() {
       setVerified(authorized)
       if (authorized !== enabled) throw new Error('Transaction confirmed, but the registry state did not match the requested change.')
       if (enabled) {
-        sessionStorage.setItem('rhbp:vault', address)
-        sessionStorage.setItem('rhbp:burner', burnerAddress)
-        sessionStorage.setItem('rhbp:mint', targetAddress)
+        saveActivePermission({ vault: address, burner: burnerAddress, mint: targetAddress })
+      } else {
+        clearActivePermission()
       }
       setStatus({
         kind: 'success',
         message: enabled
-          ? 'Authorized. Disconnect this vault, switch to the burner, then continue to mint.'
-          : 'Authorization revoked. This burner can no longer mint for this vault on this target.',
+          ? 'Permission granted. Disconnect this Safe Wallet, switch to the Mint Wallet, then continue.'
+          : 'Permission revoked. This Mint Wallet can no longer mint for this Safe Wallet on this collection.',
         hash,
       })
     } catch (caught: unknown) {
@@ -150,6 +201,7 @@ export function VaultPortal() {
       setStatus({ kind: 'error', message: caught instanceof Error ? caught.message : 'Transaction failed.' })
     } finally {
       if (currentOperation.current === submittedOperation) setBusy(false)
+      setConfirmingPermission(false)
     }
   }
 
@@ -187,6 +239,17 @@ export function VaultPortal() {
     return { vault: address, burner: burner as Address, target: target as Address }
   }, [address, burner, reviewReady, target])
 
+  const selectedCollection = useMemo(
+    () => collections?.find((c) => c.address.toLowerCase() === target.toLowerCase()) ?? null,
+    [collections, target],
+  )
+
+  const activePermission = useActivePermission()
+  const activePermissionCollectionName = useMemo(
+    () => collections?.find((c) => c.address.toLowerCase() === activePermission?.mint.toLowerCase())?.name,
+    [collections, activePermission],
+  )
+
   return (
     <main>
       <nav className="nav">
@@ -199,29 +262,31 @@ export function VaultPortal() {
       </nav>
 
       <section className="hero portal-hero">
-        <span className="pill">Vault authorization portal</span>
-        <h1>Keep your vault away from the <span>mint site.</span></h1>
+        <span className="pill">Safe Wallet permission portal</span>
+        <h1>Keep your Safe Wallet away from the <span>mint site.</span></h1>
         <p>
-          Give a disposable wallet permission to mint for one compatible collection—without giving it custody,
-          approvals, or access to anything else in your vault.
+          Give a disposable Mint Wallet permission to mint for one collection—without giving it custody,
+          approvals, or access to anything else in your Safe Wallet.
         </p>
         <div className="safety-note">
-          <strong>Important:</strong> RHBurnerPass isolates your vault; it does not make an unsafe mint contract safe.
-          Use a low-value burner on the collection’s mint site.
+          <strong>Important:</strong> RHBurnerPass isolates your Safe Wallet; it does not make an unsafe collection contract safe.
+          Use a low-value Mint Wallet on the collection’s mint site.
         </div>
       </section>
 
+      <PermissionExplainer />
+
       <section className="workflow-layout" id="authorize">
-        <aside className="flow-steps" aria-label="Authorization steps">
-          <div className={address ? 'complete' : 'active'}><span>1</span><p><strong>Connect vault</strong><small>This trusted portal is the only site your vault visits.</small></p></div>
-          <div className={!address ? '' : reviewReady ? 'complete' : 'active'}><span>2</span><p><strong>Set the scope</strong><small>One burner and one compatible mint contract.</small></p></div>
-          <div className={status.kind === 'success' ? 'complete' : reviewReady ? 'active' : ''}><span>3</span><p><strong>Authorize or revoke</strong><small>Review the exact addresses before signing.</small></p></div>
-          <div className={verified === true ? 'active' : ''}><span>4</span><p><strong>Disconnect vault</strong><small>Then switch to the burner and continue to the collection mint.</small></p></div>
+        <aside className="flow-steps" aria-label="Permission steps">
+          <div className={address ? 'complete' : 'active'}><span>1</span><p><strong>Connect Safe Wallet</strong><small>This trusted portal is the only site your Safe Wallet visits.</small></p></div>
+          <div className={!address ? '' : reviewReady ? 'complete' : 'active'}><span>2</span><p><strong>Pick a collection</strong><small>One Mint Wallet and one collection.</small></p></div>
+          <div className={status.kind === 'success' ? 'complete' : reviewReady ? 'active' : ''}><span>3</span><p><strong>Review and confirm</strong><small>Double-check before signing.</small></p></div>
+          <div className={verified === true ? 'active' : ''}><span>4</span><p><strong>Switch to Mint Wallet</strong><small>Then continue to the collection mint.</small></p></div>
         </aside>
 
         <article className="card authorization-card">
           <div className="card-heading">
-            <div><span className="eyebrow">TARGET-SCOPED PERMISSION</span><h2>Authorize a burner</h2></div>
+            <div><span className="eyebrow">COLLECTION-SCOPED PERMISSION</span><h2>Give a Mint Wallet permission</h2></div>
             <span className="scope-badge">No custody</span>
           </div>
 
@@ -229,71 +294,110 @@ export function VaultPortal() {
           {wrongNetwork && <div className="inline-alert warning-box">Wrong network. Use the switch button above before continuing.</div>}
 
           <div className="identity-row">
-            <span>Connected vault</span>
+            <span>Connected Safe Wallet</span>
             <strong>{address ? short(address) : 'Not connected'}</strong>
             {address && <code>{address}</code>}
           </div>
 
-          <label>
-            Burner wallet
-            <input
-              aria-describedby="burner-help"
-              placeholder="0x…"
-              value={burner}
-              onChange={(event) => setBurnerAddress(event.target.value.trim())}
-              disabled={busy}
-              spellCheck={false}
+          {!confirmingPermission ? (
+            <>
+              <label>
+                Mint Wallet
+                <input
+                  aria-describedby="burner-help"
+                  placeholder="0x…"
+                  value={burner}
+                  onChange={(event) => setBurnerAddress(event.target.value.trim())}
+                  disabled={busy}
+                  spellCheck={false}
+                />
+                <small id="burner-help">A disposable wallet that will use the collection’s separate mint site.</small>
+              </label>
+
+              {preselectPending && <p className="disabled-reason">Validating the linked collection…</p>}
+              <CollectionPicker
+                collections={collections}
+                loadError={collectionsError}
+                value={target}
+                onChange={setTarget}
+                disabled={busy}
+              />
+
+              <div className={`review-box ${scopeSummary ? 'ready' : ''}`}>
+                <span className="eyebrow">REVIEW SCOPE</span>
+                {scopeSummary ? (
+                  <p>
+                    Safe Wallet <code>{short(scopeSummary.vault)}</code> gives Mint Wallet <code>{short(scopeSummary.burner)}</code>
+                    {' '}permission for <code>{short(scopeSummary.target)}</code> only.
+                  </p>
+                ) : <p>{baseActionReason ?? 'Complete the fields to review this permission.'}</p>}
+              </div>
+
+              <div className="actions">
+                <button
+                  className="primary"
+                  onClick={() => setConfirmingPermission(true)}
+                  disabled={!reviewReady || Boolean(authorizeReason) || busy}
+                >
+                  Continue
+                </button>
+                <button onClick={verifyAuthorization} disabled={!reviewReady || busy}>Verify on-chain</button>
+                <button className="danger" onClick={() => submitAuthorization(false)} disabled={!reviewReady || busy}>Revoke</button>
+              </div>
+              {authorizeReason && <p className="disabled-reason">{authorizeReason}</p>}
+            </>
+          ) : (
+            <ConfirmPermissionStep
+              vault={address ?? ''}
+              burner={burner}
+              collectionName={selectedCollection?.name ?? 'This collection'}
+              collectionAddress={target}
+              verified={selectedCollection?.verified ?? null}
+              busy={busy}
+              onConfirm={() => submitAuthorization(true)}
+              onBack={() => setConfirmingPermission(false)}
             />
-            <small id="burner-help">A disposable wallet that will use the collection’s separate mint site.</small>
-          </label>
-
-          <label>
-            Compatible target mint
-            <input
-              aria-describedby="target-help"
-              placeholder="0x…"
-              value={target}
-              onChange={(event) => setTarget(event.target.value.trim())}
-              disabled={busy}
-              spellCheck={false}
-            />
-            <small id="target-help">Authorization applies only to this exact contract address. Factory-created v2 mints are recognized automatically; legacy v1 integrations use official approval.</small>
-          </label>
-
-          <div className={`review-box ${scopeSummary ? 'ready' : ''}`}>
-            <span className="eyebrow">REVIEW SCOPE</span>
-            {scopeSummary ? (
-              <p>
-                Vault <code>{short(scopeSummary.vault)}</code> authorizes burner <code>{short(scopeSummary.burner)}</code>
-                {' '}for target <code>{short(scopeSummary.target)}</code> only.
-              </p>
-            ) : <p>{baseActionReason ?? 'Complete the fields to review this authorization.'}</p>}
-          </div>
-
-          <div className="actions">
-            <button className="primary" onClick={() => submitAuthorization(true)} disabled={!reviewReady || Boolean(authorizeReason) || busy}>
-              {busy ? 'Working…' : 'Authorize burner'}
-            </button>
-            <button onClick={verifyAuthorization} disabled={!reviewReady || busy}>Verify on-chain</button>
-            <button className="danger" onClick={() => submitAuthorization(false)} disabled={!reviewReady || busy}>Revoke</button>
-          </div>
-          {authorizeReason && <p className="disabled-reason">{authorizeReason}</p>}
+          )}
 
           <div className={`status ${status.kind}`} role="status">
             <span>{status.message}</span>
             {status.hash && <a href={`${explorerBase}/tx/${status.hash}`} target="_blank" rel="noreferrer">View transaction ↗</a>}
             {verified !== null && <strong>{verified ? 'Registry: authorized' : 'Registry: not authorized'}</strong>}
             {verified === true && status.kind === 'success' && (
-              <a className="status-cta" href="#/mint">Continue to burner mint →</a>
+              <a className="status-cta" href="#/mint">Continue with Mint Wallet →</a>
             )}
           </div>
+
+          {activePermission && (
+            <ActivePermissionCard
+              vault={activePermission.vault}
+              burner={activePermission.burner}
+              mint={activePermission.mint}
+              collectionName={activePermissionCollectionName}
+              onContinue={() => { window.location.hash = '#/mint' }}
+            />
+          )}
+
+          <button type="button" className="text-action inline-toggle" onClick={() => setShowTechnical((v) => !v)}>
+            {showTechnical ? 'Hide technical details' : 'Show technical details'}
+          </button>
+          {showTechnical && (
+            <div className="technical-details">
+              <div><span>Registry</span><code>{config?.contracts.registry ?? '—'}</code></div>
+              <div><span>Factory</span><code>{config?.contracts.factory ?? '—'}</code></div>
+              <div><span>Fee vault</span><code>{config?.contracts.feeVault ?? '—'}</code></div>
+              {address && <div><span>Vault (Safe Wallet)</span><code>{address}</code></div>}
+              {burner && <div><span>Burner (Mint Wallet)</span><code>{burner}</code></div>}
+              {target && <div><span>Target (Collection)</span><code>{target}</code></div>}
+            </div>
+          )}
         </article>
       </section>
 
       <section className="scope-explainer">
-        <article><span>01</span><h3>Vault keeps eligibility</h3><p>Your allowlist or holder identity remains attached to the vault.</p></article>
-        <article><span>02</span><h3>Burner takes the risk</h3><p>The low-value wallet—not your vault—interacts with the collection frontend.</p></article>
-        <article><span>03</span><h3>Claims stay honest</h3><p>Compatible mints count allocation against the vault, even across multiple burners.</p></article>
+        <article><span>01</span><h3>Safe Wallet keeps eligibility</h3><p>Your allowlist or holder identity remains attached to the Safe Wallet.</p></article>
+        <article><span>02</span><h3>Mint Wallet takes the risk</h3><p>The low-value wallet—not your Safe Wallet—interacts with the collection frontend.</p></article>
+        <article><span>03</span><h3>Claims stay honest</h3><p>Compatible mints count allocation against the Safe Wallet, even across multiple Mint Wallets.</p></article>
       </section>
 
       <section className="developer-entry" id="developers">

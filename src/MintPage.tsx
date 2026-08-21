@@ -12,6 +12,8 @@ import {
   robinhoodChain,
 } from './rhburnerpass'
 import { WalletControl } from './WalletControl'
+import { WalletMismatchNotice } from './onboarding'
+import { readActivePermission } from './permission'
 
 type AllowlistEntry = { address: string; maxAllocation: string | number; proof: Hex[] }
 type AllowlistFile = { root?: string; entries: AllowlistEntry[] }
@@ -35,17 +37,18 @@ export function MintPage() {
   const [authorized, setAuthorized] = useState<boolean | null>(null)
   const [quote, setQuote] = useState<{ mintPrice: bigint; protocolFee: bigint; total: bigint } | null>(null)
   const [busy, setBusy] = useState(false)
-  const [message, setMessage] = useState('Connect the authorized burner wallet to continue.')
+  const [message, setMessage] = useState('Connect your Mint Wallet to continue.')
   const [hash, setHash] = useState<Hex | null>(null)
+  const [showTechnical, setShowTechnical] = useState(() => !readActivePermission())
 
   useEffect(() => {
     if (!config) return
-    const savedMint = sessionStorage.getItem('rhbp:mint') ?? ''
-    const savedVault = sessionStorage.getItem('rhbp:vault') ?? ''
-    const savedBurner = sessionStorage.getItem('rhbp:burner') ?? ''
-    if (!mint) setMint(savedMint || config.sampleMint || '')
-    if (!vault) setVault(savedVault || config.sampleVault || '')
-    if (!expectedBurner) setExpectedBurner(savedBurner)
+    // The vault → burner → collection handoff is read automatically from the
+    // saved Active Permission — the user never has to retype it here.
+    const saved = readActivePermission()
+    if (!mint) setMint(saved?.mint || config.sampleMint || '')
+    if (!vault) setVault(saved?.vault || config.sampleVault || '')
+    if (!expectedBurner) setExpectedBurner(saved?.burner ?? '')
     if (config.allowlistUrl) {
       fetch(config.allowlistUrl, { cache: 'no-store' })
         .then((res) => {
@@ -92,9 +95,9 @@ export function MintPage() {
         setAuthorized(auth)
         setQuote(nextQuote)
         if (wrongBurner) {
-          setMessage(`This browser session was authorized for ${short(expectedBurner)}. Switch to that burner wallet.`)
+          setMessage(`This browser session's permission is for ${short(expectedBurner)}. Switch to that Mint Wallet.`)
         } else {
-          setMessage(auth ? 'Authorization confirmed. Choose a quantity and mint.' : 'This connected wallet is not authorized for this vault and mint.')
+          setMessage(auth ? 'Permission confirmed. Choose a quantity and mint.' : 'This connected wallet does not have permission for this Safe Wallet and collection.')
         }
       } catch (err) {
         if (alive) setMessage(err instanceof Error ? err.message : 'Could not load mint.')
@@ -156,49 +159,49 @@ export function MintPage() {
       </nav>
 
       <section className="hero portal-hero compact-hero">
-        <span className="pill">Burner mint</span>
-        <h1>Vault eligibility. <span>Burner execution.</span></h1>
-        <p>Your vault stays disconnected. The authorized burner sends this transaction and receives the NFT.</p>
+        <span className="pill">Mint Wallet mint</span>
+        <h1>Safe Wallet eligibility. <span>Mint Wallet execution.</span></h1>
+        <p>Your Safe Wallet stays disconnected. Your Mint Wallet sends this transaction and receives the NFT.</p>
       </section>
 
       <section className="workflow-layout">
         <aside className="flow-steps">
-          <div className={address ? 'complete' : 'active'}><span>1</span><p><strong>Connect burner</strong><small>Use the low-value wallet you authorized.</small></p></div>
-          <div className={entry ? 'complete' : address ? 'active' : ''}><span>2</span><p><strong>Load eligibility</strong><small>The allowlist remains keyed to the vault.</small></p></div>
-          <div className={authorized ? 'complete' : entry ? 'active' : ''}><span>3</span><p><strong>Confirm authorization</strong><small>Must match this exact mint contract.</small></p></div>
-          <div className={authorized && remaining !== 0n ? 'active' : ''}><span>4</span><p><strong>Mint</strong><small>NFT is delivered to the burner.</small></p></div>
+          <div className={address ? 'complete' : 'active'}><span>1</span><p><strong>Connect Mint Wallet</strong><small>Use the low-value wallet you gave permission to.</small></p></div>
+          <div className={entry ? 'complete' : address ? 'active' : ''}><span>2</span><p><strong>Load eligibility</strong><small>The allowlist remains keyed to the Safe Wallet.</small></p></div>
+          <div className={authorized ? 'complete' : entry ? 'active' : ''}><span>3</span><p><strong>Confirm permission</strong><small>Must match this exact collection.</small></p></div>
+          <div className={authorized && remaining !== 0n ? 'active' : ''}><span>4</span><p><strong>Mint</strong><small>NFT is delivered to the Mint Wallet.</small></p></div>
         </aside>
 
         <article className="card authorization-card">
           <div className="card-heading">
             <div><span className="eyebrow">CANONICAL RHBP MINT</span><h2>{summary ? `${summary.name} (${summary.symbol})` : 'Protected mint'}</h2></div>
-            <span className="scope-badge">Vault-safe flow</span>
+            <span className="scope-badge">Safe Wallet-safe flow</span>
           </div>
 
           {configError && <div className="inline-alert error">{configError}</div>}
           {wrongNetwork && <div className="inline-alert warning-box">Switch to {robinhoodChain.name} before continuing.</div>}
-          {wrongBurner && <div className="inline-alert warning-box">Wrong wallet connected. Switch to the burner authorized in the vault portal: <strong>{short(expectedBurner)}</strong>.</div>}
+          {wrongBurner && <WalletMismatchNotice expected={expectedBurner} connected={address ?? ''} />}
 
           <div className="identity-row">
-            <span>Connected burner</span>
+            <span>Connected Mint Wallet</span>
             <strong>{address ? short(address) : 'Not connected'}</strong>
             {address && <code>{address}</code>}
           </div>
 
-          <div className="two-col compact-fields">
-            <label>Mint contract<input value={mint} onChange={(e) => setMint(e.target.value.trim())} placeholder="0x…" spellCheck={false} /></label>
-            <label>Eligible vault<input value={vault} onChange={(e) => setVault(e.target.value.trim())} placeholder="0x…" spellCheck={false} /></label>
+          <div className="active-permission-summary">
+            <span>Collection</span><strong>{summary ? `${summary.name} (${summary.symbol})` : short(mint || '0x')}</strong>
+            <span>Safe Wallet</span><strong>{vault ? short(vault) : '—'}</strong>
           </div>
 
           <div className="mint-stats">
             <div><span>Allocation</span><strong>{entry ? entry.maxAllocation : '—'}</strong></div>
             <div><span>Claimed</span><strong>{claimed === null ? '—' : claimed.toString()}</strong></div>
             <div><span>Remaining</span><strong>{remaining === null ? '—' : remaining.toString()}</strong></div>
-            <div><span>Authorization</span><strong className={authorized ? 'good-text' : ''}>{authorized === null ? '—' : authorized ? 'Ready' : 'Missing'}</strong></div>
+            <div><span>Permission</span><strong className={authorized ? 'good-text' : ''}>{authorized === null ? '—' : authorized ? 'Ready' : 'Missing'}</strong></div>
           </div>
 
           <div className="quantity-row">
-            <div><span className="field-title">Quantity</span><small>Cannot exceed the vault’s remaining allocation.</small></div>
+            <div><span className="field-title">Quantity</span><small>Cannot exceed the Safe Wallet’s remaining allocation.</small></div>
             <div className="quantity-control">
               <button aria-label="Decrease quantity" onClick={() => setQuantity((q) => Math.max(1, q - 1))} disabled={quantity <= 1}>−</button>
               <strong>{quantity}</strong>
@@ -217,13 +220,23 @@ export function MintPage() {
           )}
 
           <div className="actions mint-actions">
-            <button className="primary large-action" disabled={mintDisabled} onClick={submitMint}>{busy ? 'Minting…' : `Mint ${quantity} with burner`}</button>
-            {!authorized && <a className="text-action" href="#/">Need authorization? Return to vault portal →</a>}
+            <button className="primary large-action" disabled={mintDisabled} onClick={submitMint}>{busy ? 'Minting…' : `Mint ${quantity} with Mint Wallet`}</button>
+            {!authorized && <a className="text-action" href="#/">Need permission? Return to Safe Wallet portal →</a>}
           </div>
           <div className={`status ${hash ? 'success' : authorized ? 'success' : 'idle'}`}>
             <span>{message}</span>
             {hash && <a href={`${explorer}/tx/${hash}`} target="_blank" rel="noreferrer">View transaction ↗</a>}
           </div>
+
+          <button type="button" className="text-action inline-toggle" onClick={() => setShowTechnical((v) => !v)}>
+            {showTechnical ? 'Hide technical details' : 'Show technical details'}
+          </button>
+          {showTechnical && (
+            <div className="technical-details">
+              <label>Mint contract<input value={mint} onChange={(e) => setMint(e.target.value.trim())} placeholder="0x…" spellCheck={false} /></label>
+              <label>Eligible vault<input value={vault} onChange={(e) => setVault(e.target.value.trim())} placeholder="0x…" spellCheck={false} /></label>
+            </div>
+          )}
         </article>
       </section>
     </main>

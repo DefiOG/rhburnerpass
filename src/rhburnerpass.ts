@@ -41,6 +41,24 @@ export type RHBPConfig = {
   sampleMint?: string
   sampleVault?: string
   allowlistUrl?: string
+  collectionsUrl?: string
+}
+
+export type CollectionEntry = {
+  name: string
+  address: string
+  verified?: boolean
+  description?: string
+  image?: string
+}
+
+export async function loadCollections(configUrl?: string): Promise<CollectionEntry[]> {
+  const url = configUrl?.trim() || './collections.json'
+  const response = await fetch(url, { cache: 'no-store' })
+  if (!response.ok) throw new Error(`Could not load ${url}`)
+  const data = await response.json() as CollectionEntry[]
+  if (!Array.isArray(data)) throw new Error('Collections file must be a JSON array.')
+  return data.filter((entry) => isAddress(entry.address))
 }
 
 export const registryAbi = [
