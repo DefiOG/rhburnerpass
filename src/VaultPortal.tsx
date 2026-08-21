@@ -32,11 +32,33 @@ function short(address: string) {
   return `${address.slice(0, 6)}…${address.slice(-4)}`
 }
 
-function readCollectionParam(): string {
+function readQueryParam(name: string): string {
   try {
-    return new URLSearchParams(window.location.search).get('collection')?.trim() ?? ''
+    return new URLSearchParams(window.location.search).get(name)?.trim() ?? ''
   } catch {
     return ''
+  }
+}
+
+function readCollectionParam() {
+  return readQueryParam('collection')
+}
+
+function readBurnerParam() {
+  const candidate = readQueryParam('burner')
+  return isAddress(candidate) ? candidate : ''
+}
+
+function readReturnUrl(): URL | null {
+  const raw = readQueryParam('return')
+  if (!raw) return null
+  try {
+    const url = new URL(raw)
+    const localhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1'
+    if (url.protocol !== 'https:' && !(url.protocol === 'http:' && localhost)) return null
+    return url
+  } catch {
+    return null
   }
 }
 
@@ -44,7 +66,7 @@ export function VaultPortal() {
   const { config, error: configError } = useAppConfig()
   const { address, chainId, isConnected } = useAccount()
   const { data: walletClient } = useWalletClient()
-  const [burner, setBurnerAddress] = useState('')
+  const [burner, setBurnerAddress] = useState(() => readBurnerParam())
   const [target, setTarget] = useState('')
   const [verified, setVerified] = useState<boolean | null>(null)
   const [busy, setBusy] = useState(false)
@@ -132,6 +154,13 @@ export function VaultPortal() {
   const referenceSourceUrl = `${repoBase}/blob/main/contracts/RHBurnerPassReferenceMint.sol`
   const referenceMintAddress = '0x94FEa8Ea67f8B2B72c9c196aCAFd2C0471F30309'
   const referenceExplorerUrl = `${explorerBase}/address/${referenceMintAddress}`
+  const returnUrl = useMemo(() => readReturnUrl(), [])
+  const returnHost = returnUrl?.host ?? ''
+  const continueLabel = returnUrl ? `Return to ${returnHost} →` : 'Continue with Mint Wallet →'
+  const continueAfterPermission = () => {
+    if (returnUrl) window.location.assign(returnUrl.toString())
+    else window.location.hash = '#/mint'
+  }
 
   async function submitAuthorization(enabled: boolean) {
     const blockingReason = enabled ? authorizeReason : baseActionReason
@@ -311,7 +340,7 @@ export function VaultPortal() {
                   disabled={busy}
                   spellCheck={false}
                 />
-                <small id="burner-help">A disposable wallet that will use the collection’s separate mint site.</small>
+                <small id="burner-help">A disposable wallet that will use the collection’s separate mint site.{readBurnerParam() && ' Prefilled by the collection link — verify it before signing.'}</small>
               </label>
 
               {preselectPending && <p className="disabled-reason">Validating the linked collection…</p>}
@@ -364,7 +393,7 @@ export function VaultPortal() {
             {status.hash && <a href={`${explorerBase}/tx/${status.hash}`} target="_blank" rel="noreferrer">View transaction ↗</a>}
             {verified !== null && <strong>{verified ? 'Registry: authorized' : 'Registry: not authorized'}</strong>}
             {verified === true && status.kind === 'success' && (
-              <a className="status-cta" href="#/mint">Continue with Mint Wallet →</a>
+              <button type="button" className="status-cta" onClick={continueAfterPermission}>{continueLabel}</button>
             )}
           </div>
 
@@ -374,7 +403,8 @@ export function VaultPortal() {
               burner={activePermission.burner}
               mint={activePermission.mint}
               collectionName={activePermissionCollectionName}
-              onContinue={() => { window.location.hash = '#/mint' }}
+              onContinue={continueAfterPermission}
+              continueLabel={continueLabel}
             />
           )}
 

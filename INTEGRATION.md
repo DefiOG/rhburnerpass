@@ -324,3 +324,21 @@ The reference integration has completed a real mainnet protected mint and revoca
 It does not mean RHBurnerPass endorses the collection team, website, metadata, other contracts, or business.
 
 See `SECURITY.md`.
+
+---
+
+## v2.2 preferred frontend integration: Collection SDK
+
+For Factory-created v2 mints, collection teams no longer need to hand-write the frontend Registry/FeeVault glue. See [`SDK_INTEGRATION.md`](SDK_INTEGRATION.md).
+
+The SDK keeps security-sensitive checks on-chain and provides a collection-site flow:
+
+1. collector connects the Mint Wallet on the collection's own page;
+2. SDK validates the collection against the canonical RHBP Factory and bindings;
+3. SDK checks Safe Wallet → Mint Wallet permission for that collection;
+4. if missing, collector is sent to the trusted RHBP portal with collection + Mint Wallet prefilled;
+5. the Safe Wallet grants permission there;
+6. RHBP presents an explicit return button showing the collection site's hostname;
+7. back on the collection page, the SDK rechecks permission, quotes the exact live fee, and submits the protected mint.
+
+The collection frontend still supplies the eligible Safe Wallet, `maxAllocation`, and Merkle proof from its own allowlist/backend.

@@ -21,3 +21,15 @@ The integration owner may update the payout for future fees. Already-accrued fee
 A mint page needs the burner wallet, eligible vault, vault `maxAllocation`, and Merkle proof. Call payable `mint(vault,maxAllocation,quantity,proof)`. Read `rhBurnerPassFee(burner,vault,quantity)` and `mintPrice()` for the exact payment.
 
 NFT recipient is `msg.sender`. Allocation usage is always `claimedByVault[vault]`. See `MintPageExample.tsx`.
+
+## v2.2 collection SDK
+
+For an existing React/wagmi collection frontend, start with [`SDK_INTEGRATION.md`](../SDK_INTEGRATION.md).
+
+The collection-side SDK validates the canonical Factory bindings, checks Safe Wallet → Mint Wallet permission, quotes the exact payable value, and prepares/submits the protected mint. If permission is missing, it sends the collector to the trusted RHBP portal with the collection and currently connected Mint Wallet prefilled, then provides an explicit return-to-collection handoff.
+
+Source packages live under:
+
+- `packages/sdk/` — framework-agnostic client
+- `packages/react/` — React/wagmi hooks and components
+- `examples/protected-mint-widget/` — minimal integration example

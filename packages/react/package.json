@@ -1,0 +1,24 @@
+{
+  "name": "@rhburnerpass/react",
+  "version": "0.1.0",
+  "description": "Drop-in React components and hooks for RHBurnerPass protected mints.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "dependencies": {
+    "@rhburnerpass/sdk": "0.1.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "viem": "^2.55.18",
+    "wagmi": "^2.0.0 || ^3.0.0"
+  },
+  "license": "MIT"
+}

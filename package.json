@@ -22,7 +22,9 @@
     "mint:v2:testnet": "node --env-file=.env scripts/create-v2-mint.mjs --network=testnet",
     "mint:v2:mainnet": "node --env-file=.env.mainnet scripts/create-v2-mint.mjs --network=mainnet",
     "verify:v2:testnet": "node --env-file=.env scripts/verify-v2-testnet.mjs",
-    "verify:v2:sources:testnet": "node --env-file=.env scripts/verify-v2-sources-testnet.mjs"
+    "verify:v2:sources:testnet": "node --env-file=.env scripts/verify-v2-sources-testnet.mjs",
+    "sdk:build": "tsc -p packages/sdk/tsconfig.json && tsc -p packages/react/tsconfig.json",
+    "sdk:typecheck": "tsc -p packages/sdk/tsconfig.json --noEmit && tsc -p packages/react/tsconfig.json --noEmit"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.4.0",

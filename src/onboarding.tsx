@@ -156,12 +156,14 @@ export function ActivePermissionCard({
   mint,
   collectionName,
   onContinue,
+  continueLabel = 'Continue with Mint Wallet →',
 }: {
   vault: string
   burner: string
   mint: string
   collectionName?: string
   onContinue?: () => void
+  continueLabel?: string
 }) {
   return (
     <div className="active-permission-card">
@@ -170,7 +172,7 @@ export function ActivePermissionCard({
       <div className="confirm-row"><span>Mint Wallet</span><code>{short(burner)}</code></div>
       <div className="confirm-row"><span>Collection</span><span>{collectionName ?? short(mint)}</span></div>
       {onContinue && (
-        <button className="primary status-cta" onClick={onContinue}>Continue with Mint Wallet →</button>
+        <button className="primary status-cta" onClick={onContinue}>{continueLabel}</button>
       )}
     </div>
   )

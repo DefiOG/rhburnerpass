@@ -253,3 +253,9 @@ Legacy and v2 testnet deployments remain useful for development and regression t
 ## License
 
 MIT.
+
+## Collection SDK (v2.2 development)
+
+The repository now includes a collection-side SDK under `packages/` so existing React/wagmi mint pages can embed RHBurnerPass without reimplementing Factory validation, permission checks, fee quoting, and protected mint preparation.
+
+Start with [`SDK_INTEGRATION.md`](SDK_INTEGRATION.md). The SDK does not change the deployed v2 contracts, protocol fee, or vault-keyed allocation model.
